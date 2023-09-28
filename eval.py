@@ -16,7 +16,7 @@ def evaluate(model, test_loader, criterion, DEVICE):
             image = image.to(DEVICE)
             label = label.to(DEVICE)
             output = model(image)
-            test_loss += criterion(output, label).item()
+            test_loss += criterion.yolo_multitask_loss(output, label).item()
             prediction = output.max(1, keepdim=True)[1]
             correct += prediction.eq(label.view_as(prediction)).sum().item()
 

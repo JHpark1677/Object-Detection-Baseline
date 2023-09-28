@@ -46,31 +46,34 @@ class FrozenBatchNorm2d(torch.nn.Module):
 class yolo(nn.Module):
     def __init__(self):
         super(yolo, self).__init__()
-        self.backbone = nn.Sequential(*list(nn.ModuleList(resnet50(pretrained=True,
-                                                                   norm_layer=FrozenBatchNorm2d).children()))[:-2]) # 마지막 2개 Layer를 제외한 나머지를 가져온다.
-        
-        for name, parameter in self.backbone.named_parameters():
-            if '5.' not in name and '6.' not in name and '7.' not in name:
-                parameter.requires_grad_(False)
+        VGGNet = torch.hub.load('pytorch/vision:v0.10.0', 'vgg16', pretrained=True)
+
+        for i in range(len(VGGNet.features[:-1])) :
+            if type(VGGNet.features[i]) == type(nn.Conv2d(64,64,3)) :
+                VGGNet.features[i].weight.requires_grad = False
+                VGGNet.features[i].bias.requires_grad = False
+                VGGNet.features[i].padding = 1
+
+        self.backbone = VGGNet.features[:-1]
 
         self.conv = nn.Sequential(
-            nn.Conv2d(in_channels=512, out_channels=1024, kernel_size=3, padding=1),
-            nn.LeakyReLU(), 
-            nn.Conv2d(in_channels=1024, out_channels=1024, kernel_size=3, padding=1),
-            nn.LeakyReLU(), 
-            nn.Conv2d(in_channels=1024, out_channels=1024, kernel_size=3, padding=1), 
-            nn.LeakyReLU(), 
-            nn.Conv2d(in_channels=1024, out_channels=1024, kernel_size=3, padding=1), 
-            nn.LeakyReLU(), 
+            nn.Conv2d(in_channels = 512,out_channels = 1024, kernel_size = 3, padding = 1), # default stride = 1
+            nn.LeakyReLU(),
+            nn.Conv2d(in_channels = 1024,out_channels = 1024, kernel_size = 3, padding = 1),
+            nn.LeakyReLU(),
+            nn.MaxPool2d(2),
+            nn.Conv2d(in_channels = 1024,out_channels = 1024, kernel_size = 3, padding = 1),
+            nn.LeakyReLU(),
+            nn.Conv2d(in_channels = 1024,out_channels = 1024, kernel_size = 3, padding = 1),
+            nn.LeakyReLU(),
             nn.Flatten()
         )
         self.linear = nn.Sequential(
-            nn.Linear(7*7*1024, 4096), 
-            nn.LeakyReLU(), 
-            nn.Dropout(), 
-            nn.Linear(4096, 1470) # 7 * 7 * 30
+            nn.Linear(7*7*1024, 4096),
+            nn.LeakyReLU(),
+            nn.Dropout(),       # default probability = 0.5
+            nn.Linear(4096, 1470)
         )
-
         for m in self.conv.modules():
             if isinstance(m, nn.Conv2d) :
                 nn.init.normal_(m.weight, mean=0, std=0.01)
@@ -81,7 +84,7 @@ class yolo(nn.Module):
 
     def forward(self, x):
         out = self.backbone(x)
-        print("what about this? : ", out.shape)
+        # backbone output shape : [16, 512, 14, 14]
         out = self.conv(out)
         out = self.linear(out)
         out = torch.reshape(out, (-1, 7, 7, 30))
@@ -91,9 +94,11 @@ class yolo(nn.Module):
 def test():
     net = yolo()
     batch_size = 16
-    x = torch.rand(batch_size, 3, 800, 800)
+    x = torch.rand(batch_size, 3, 224, 224)
     y = net(x)
-    print(y)
+    print("batch_size : ", len(y))
+    print(y.shape) # [16, 7, 7, 30]
+    # (2 bounding box information, 2 class labels)
 
 if __name__ == '__main__':
     test()
