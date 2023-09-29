@@ -17,8 +17,8 @@ def dataloader(args):
         testset_1 = YOLO_PASCAL_VOC(path2data, year='2007', image_set='val', download=True)
         testset_2 = YOLO_PASCAL_VOC(path2data, year='2012', image_set='val', download=True)
 
-        trainset = torch.utils.data.ConcatDataset([trainset_1, trainset_2])
-        testset = torch.utils.data.ConcatDataset([testset_1, testset_2])
+        trainset = torch.utils.data.ConcatDataset([trainset_1, trainset_2, testset_2])
+        testset = torch.utils.data.ConcatDataset([testset_1])
 
         if args.distributed:
             trainloader = torch.utils.data.DataLoader(trainset, batch_size=int(args.batch_size/args.world_size), 

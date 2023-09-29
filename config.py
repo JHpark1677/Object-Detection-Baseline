@@ -5,7 +5,7 @@ def get_args_parser():
     # * config
     parser = configargparse.ArgumentParser(add_help=False)
     parser.add_argument("--path", default="D:\data", type=str,help='data path')
-    parser.add_argument("--batch_size", default=16, type=int)
+    parser.add_argument("--batch_size", default=64, type=int)
     parser.add_argument("--epoch_num", default=300, type=int)
 
     parser.add_argument("--dataset", default="voc", type=str)

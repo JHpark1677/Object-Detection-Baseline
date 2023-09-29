@@ -61,7 +61,7 @@ def main_worker(rank, args):
             
         train.train(model, trainloader, optimizer, criterion, epoch, device)
         
-        test_loss, test_accuracy = eval.evaluate(model, testloader, criterion, device)
+        #test_loss, test_accuracy = eval.evaluate(model, testloader, criterion, device)
 
 
 if __name__ == "__main__": 

@@ -18,17 +18,7 @@ def train(model, train_loader, optimizer, criterion, epoch, DEVICE):
     """
     batches = len(train_loader)
     model.train()
-    #tqdm_bar = tqdm(train_loader, total=batches)
-        # image = image.to(DEVICE)
-        # label = label.to(DEVICE)
-        # optimizer.zero_grad()
-        # print("what's input's shape ? :", image.shape)
-        # output = model(image)
-        # print("what's output's shape ? : ", output.shape)
-        # loss = criterion.yolo_multitask_loss(output, label)
-        # loss.backward()
-        # optimizer.step()
-        # tqdm_bar.set_description("Epoch {} - train loss: {:.6f}".format(epoch, loss.item()))
+
     pred_boxes, target_boxes = get_bboxes(
         train_loader, model, iou_threshold=0.5, threshold=0.4, device=DEVICE
     )
@@ -50,10 +40,10 @@ def train(model, train_loader, optimizer, criterion, epoch, DEVICE):
         #    import time
         #    time.sleep(10)
 
-    train_fn(train_loader, model, optimizer, criterion, DEVICE)
+    train_fn(train_loader, model, optimizer, criterion, epoch, DEVICE)
 
 
-def train_fn(train_loader, model, optimizer, loss_fn):
+def train_fn(train_loader, model, optimizer, loss_fn, epoch, DEVICE):
     loop = tqdm(train_loader, leave=True)
     mean_loss = []
 
@@ -68,5 +58,6 @@ def train_fn(train_loader, model, optimizer, loss_fn):
 
         # update progress bar
         loop.set_postfix(loss=loss.item())
+        tqdm_bar.set_description("Epoch {} - train loss: {:.6f}".format(epoch, loss.item()))
 
     print(f"Mean loss was {sum(mean_loss)/len(mean_loss)}")

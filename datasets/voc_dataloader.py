@@ -22,7 +22,7 @@ class YOLO_PASCAL_VOC(VOCDetection):
                    "dog", "horse", "motorbike", "person", "pottedplant",
                    "sheep", "sofa", "train", "tvmonitor"]
 
-        label = np.zeros((7, 7, 25), dtype = float) # groundtruth bounding box가 하나이므로 (7, 7, 25)의 shape을 가진다. 
+        label = np.zeros((7, 7, 30), dtype = float) # groundtruth bounding box, (7, 7, 25)
 
         Image_Height = float(target['annotation']['size']['height'])
         Image_Width  = float(target['annotation']['size']['width'])
@@ -40,7 +40,7 @@ class YOLO_PASCAL_VOC(VOCDetection):
                 x_max = float(obj['bndbox']['xmax']) 
                 y_max = float(obj['bndbox']['ymax'])
 
-                # 224*224에 맞게 변형시켜줌
+                # 448*448에 맞게 변형시켜줌
                 x_min = float((448.0/Image_Width)*x_min)
                 y_min = float((448.0/Image_Height)*y_min)
                 x_max = float((448.0/Image_Width)*x_max)
@@ -63,14 +63,14 @@ class YOLO_PASCAL_VOC(VOCDetection):
                 w = w / 448.0
                 h = h / 448.0
 
-                class_index_inCell = class_index + 5
+                class_index_inCell = class_index
 
-                label[y_cell][x_cell][0] = x_val_inCell # cell 안에서 center point가 어느 위치에 있을 지
-                label[y_cell][x_cell][1] = y_val_inCell 
-                label[y_cell][x_cell][2] = w # bounding box의 width와 height를 normalize 한 것
-                label[y_cell][x_cell][3] = h
-                label[y_cell][x_cell][4] = 1.0
-                label[y_cell][x_cell][class_index_inCell] = 1.0 # one hot vector로 class를 입력
+                label[y_cell][x_cell][21] = x_val_inCell
+                label[y_cell][x_cell][22] = y_val_inCell
+                label[y_cell][x_cell][23] = w
+                label[y_cell][x_cell][24] = h
+                label[y_cell][x_cell][20] = 1.0
+                label[y_cell][x_cell][class_index_inCell] = 1.0
 
 
         # single-object in image
@@ -106,13 +106,13 @@ class YOLO_PASCAL_VOC(VOCDetection):
             w = w / 448.0
             h = h / 448.0
 
-            class_index_inCell = class_index + 5
+            class_index_inCell = class_index
 
-            label[y_cell][x_cell][0] = x_val_inCell
-            label[y_cell][x_cell][1] = y_val_inCell
-            label[y_cell][x_cell][2] = w
-            label[y_cell][x_cell][3] = h
-            label[y_cell][x_cell][4] = 1.0
+            label[y_cell][x_cell][21] = x_val_inCell
+            label[y_cell][x_cell][22] = y_val_inCell
+            label[y_cell][x_cell][23] = w
+            label[y_cell][x_cell][24] = h
+            label[y_cell][x_cell][20] = 1.0
             label[y_cell][x_cell][class_index_inCell] = 1.0
             
         return img, torch.tensor(label)

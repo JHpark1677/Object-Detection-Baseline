@@ -254,7 +254,6 @@ def get_bboxes(
         with torch.no_grad():
             predictions = model(x)
         batch_size = x.shape[0]
-        #print("what about this? ? ? : ", labels.shape)
         true_bboxes = cellboxes_to_boxes(labels)
         bboxes = cellboxes_to_boxes(predictions)
 
@@ -295,7 +294,6 @@ def convert_cellboxes(predictions, S=7):
     """
     predictions = predictions.to("cpu")
     batch_size = predictions.shape[0]
-    print("what about this ??? : ", predictions.shape)
     predictions = predictions.reshape(batch_size, 7, 7, 30)
     bboxes1 = predictions[..., 21:25]
     bboxes2 = predictions[..., 26:30]
@@ -319,7 +317,6 @@ def convert_cellboxes(predictions, S=7):
 
 
 def cellboxes_to_boxes(out, S=7):
-    print("critical points : ", out.shape)
     converted_pred = convert_cellboxes(out).reshape(out.shape[0], S * S, -1)
     converted_pred[..., 0] = converted_pred[..., 0].long()
     all_bboxes = []
