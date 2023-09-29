@@ -8,7 +8,7 @@ def dataloader(args):
 
     if args.dataset == 'voc':
         
-        path2data = 'C:/Users/RTL/Documents/GitHub/PyTorch-FusionStudio'
+        path2data = 'D:\data'
         if not os.path.exists(path2data):
             os.mkdir(path2data)
 
@@ -39,15 +39,3 @@ def dataloader(args):
     print("train set size :", args.batch_size * len(trainloader))
     print("test set size :", args.batch_size * len(testloader))
     return trainloader, testloader
-
-
-# if __name__ == '__main__':
-#     import torch.multiprocessing as mp
-#     from config import get_args_parser
-#     import configargparse
-
-#     parser = configargparse.ArgumentParser('ResNet', parents=[get_args_parser()])
-#     args = parser.parse_args()
-#     trainloader, testloader = dataloader(args)
-#     print("length of trainloader : ", len(trainloader))
-#     print("length of testloader : ", len(testloader))

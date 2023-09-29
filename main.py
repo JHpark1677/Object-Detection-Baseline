@@ -21,7 +21,7 @@ def main_worker(rank, args):
     print("My Device :", device)
 
     # 3. data loader
-    path2data = 'C:/Users/RTL/Documents/GitHub/PyTorch-FusionStudio'
+    path2data = 'D:\data'
     if not os.path.exists(path2data):
         os.mkdir(path2data)
 
@@ -45,7 +45,7 @@ def main_worker(rank, args):
     ]
     
     # 5. optimizer, scheduler, criterion
-    optimizer = torch.optim.SGD(model.parameters(), lr = 0.001, momentum = 0.9, weight_decay=5e-4)
+    optimizer = torch.optim.SGD(model.parameters(), lr = 0.00001, momentum = 0.9, weight_decay=5e-4)
     criterion = loss_copy_1.YoloLoss()
     args.epoch_num = 300
     test_accuracy = 0
@@ -63,7 +63,6 @@ def main_worker(rank, args):
         #test_loss, test_accuracy = eval.evaluate(model, testloader, criterion, device)
 
 
-
 if __name__ == "__main__": 
     import torch.multiprocessing as mp
     from config import get_args_parser
@@ -79,7 +78,6 @@ if __name__ == "__main__":
 
     args.world_size = len(args.gpu_ids)
     args.num_workers = len(args.gpu_ids) * 4
-    args.distributed = False
 
     if args.distributed:
         mp.spawn(main_worker,
