@@ -1,3 +1,5 @@
+import os
+
 from tqdm.auto import tqdm
 from util.utils import (
     non_max_suppression,
@@ -10,7 +12,7 @@ from util.utils import (
     load_checkpoint
 )
 
-def train(model, train_loader, optimizer, criterion, epoch, DEVICE):
+def train(model, train_loader, optimizer, criterion, epoch,args, DEVICE):
     """
     Trains the model with training data.
 
@@ -39,6 +41,10 @@ def train(model, train_loader, optimizer, criterion, epoch, DEVICE):
         #    time.sleep(10)
 
     train_fn(train_loader, model, optimizer, criterion, epoch, DEVICE)
+
+    path = '../checkpoint/' + os.path.join(args.save_ckp)
+    state = model.state_dict()
+    save_checkpoint(state, path)
 
 
 def train_fn(train_loader, model, optimizer, loss_fn, epoch, DEVICE):
