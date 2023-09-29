@@ -29,8 +29,6 @@ def train(model, train_loader, optimizer, criterion, epoch, DEVICE):
     
     print(f"Train mAP: {mean_avg_prec}")
 
-    print(f"Train mAP: {mean_avg_prec}")
-
         #if mean_avg_prec > 0.9:
         #    checkpoint = {
         #        "state_dict": model.state_dict(),
@@ -58,6 +56,6 @@ def train_fn(train_loader, model, optimizer, loss_fn, epoch, DEVICE):
 
         # update progress bar
         loop.set_postfix(loss=loss.item())
-        tqdm_bar.set_description("Epoch {} - train loss: {:.6f}".format(epoch, loss.item()))
+        loop.set_description("Epoch {} - train loss: {:.6f}".format(epoch, loss.item()))
 
     print(f"Mean loss was {sum(mean_loss)/len(mean_loss)}")

@@ -45,7 +45,7 @@ def main_worker(rank, args):
     ]
     
     # 5. optimizer, scheduler, criterion
-    optimizer = torch.optim.SGD(model.parameters(), lr = 0.01, momentum = 0.9, weight_decay=5e-4)
+    optimizer = torch.optim.SGD(model.parameters(), lr = 0.001, momentum = 0.9, weight_decay=5e-4)
     criterion = loss_copy_1.YoloLoss()
     args.epoch_num = 300
     test_accuracy = 0
@@ -60,8 +60,8 @@ def main_worker(rank, args):
             trainloader.sampler.set_epoch(epoch)
             
         train.train(model, trainloader, optimizer, criterion, epoch, device)
-        
         #test_loss, test_accuracy = eval.evaluate(model, testloader, criterion, device)
+
 
 
 if __name__ == "__main__": 
