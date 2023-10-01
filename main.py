@@ -30,9 +30,7 @@ def main_worker(rank, args):
 
     # 4. model load
     model = models.yolo_v1_impl_3.Yolov1(split_size=7, num_boxes=2, num_classes=20).to(device)
-
-    model = models.yolo_v1_copy_3.Yolov1(split_size=7, num_boxes=2, num_classes=20).to(device)
-    
+        
     resume.load_ckp(model, args)
     # if args.resume:
     #     print('==> Resuming from checkpoint..')

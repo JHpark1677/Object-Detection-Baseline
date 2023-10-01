@@ -8,9 +8,9 @@ from util.utils import (
     cellboxes_to_boxes,
     get_bboxes,
     plot_image,
-    save_checkpoint,
-    load_checkpoint
 )
+
+from utils import resume
 
 def train(model, train_loader, optimizer, criterion, epoch,args, DEVICE):
     """
@@ -31,20 +31,14 @@ def train(model, train_loader, optimizer, criterion, epoch,args, DEVICE):
     
     print(f"Train mAP: {mean_avg_prec}")
 
-        #if mean_avg_prec > 0.9:
-        #    checkpoint = {
-        #        "state_dict": model.state_dict(),
-        #        "optimizer": optimizer.state_dict(),
-        #    }
-        #    save_checkpoint(checkpoint, filename=LOAD_MODEL_FILE)
-        #    import time
-        #    time.sleep(10)
-
     train_fn(train_loader, model, optimizer, criterion, epoch, DEVICE)
 
     path = '../checkpoint/' + os.path.join(args.save_ckp)
-    state = model.state_dict()
-    save_checkpoint(state, path)
+    checkpoint = {
+        "state_dict" : model.state_dict(), 
+        "optimizer" : optimizer.state_dict()
+    }
+    resume.save_checkpoint(checkpoint, path)
 
 
 def train_fn(train_loader, model, optimizer, loss_fn, epoch, DEVICE):
