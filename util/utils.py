@@ -68,12 +68,12 @@ def non_max_suppression(bboxes, iou_threshold, threshold, box_format="corners"):
 
     assert type(bboxes) == list
 
-    bboxes = [box for box in bboxes if box[1] > threshold]
-    bboxes = sorted(bboxes, key=lambda x: x[1], reverse=True)
+    bboxes = [box for box in bboxes if box[1] > threshold] # confidence score가 낮은 bounding box는 제거된다. 
+    bboxes = sorted(bboxes, key=lambda x: x[1], reverse=True) # 점수 오름차순으로 정렬 (x[1] : prob score의 값을 비교하여 순서대로 정렬한다.)
     bboxes_after_nms = []
 
-    while bboxes:
-        chosen_box = bboxes.pop(0)
+    while bboxes: # bbox가 모두 제거될 때까지 반복.
+        chosen_box = bboxes.pop(0) # bbox의 맨 앞에 있는 값을 빼 냄.
 
         bboxes = [
             box
@@ -83,10 +83,9 @@ def non_max_suppression(bboxes, iou_threshold, threshold, box_format="corners"):
                 torch.tensor(chosen_box[2:]),
                 torch.tensor(box[2:]),
                 box_format=box_format,
-            )
+            ) # class가 다르면 bbox에 남기고, 그 외에는 없앤다. 
             < iou_threshold
         ]
-
         bboxes_after_nms.append(chosen_box)
 
     return bboxes_after_nms
@@ -160,7 +159,7 @@ def mean_average_precision(
             ground_truth_img = [
                 bbox for bbox in ground_truths if bbox[0] == detection[0]
             ]
-
+            # 같은 image에서 나온 detection 중에서 iou가 큰 box를 찾는다. 
             num_gts = len(ground_truth_img)
             best_iou = 0
 
@@ -182,7 +181,7 @@ def mean_average_precision(
                     TP[detection_idx] = 1
                     amount_bboxes[detection[0]][best_gt_idx] = 1
                 else:
-                    FP[detection_idx] = 1
+                    FP[detection_idx] = 1 # 제대로 detection을 못한 경우
 
             # if IOU is lower then the detection is a false positive
             else:
@@ -196,7 +195,7 @@ def mean_average_precision(
         recalls = torch.cat((torch.tensor([0]), recalls))
         # torch.trapz for numerical integration
         average_precisions.append(torch.trapz(precisions, recalls))
-
+        # torch.trapz -> 주어진 차원에 따라 x에 대한 y의 적분을 계산하는데 사용한다. 
     return sum(average_precisions) / len(average_precisions)
 
 

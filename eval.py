@@ -30,4 +30,4 @@ def evaluate(model, test_loader, DEVICE):
         pred_boxes, target_boxes, iou_threshold=0.5, box_format="midpoint"
     )
 
-    print(f"Train mAP: {mean_avg_prec}")
+    print(f"Test mAP: {mean_avg_prec}")
