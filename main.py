@@ -37,7 +37,7 @@ def main_worker(rank, args):
         assert os.path.isdir('../checkpoint'), 'Error : no checkpoint directory found'
         path = '../checkpoint/' + os.path.join(args.load_ckp)
         checkpoint = torch.load(path)
-        model.load_state_dict(checkpoint['model'])
+        model.load_state_dict(checkpoint["state_dict"])
 
     model_without_ddp = model
     if args.distributed:
@@ -53,7 +53,7 @@ def main_worker(rank, args):
     ]
     
     # 5. optimizer, scheduler, criterion
-    optimizer = torch.optim.SGD(model.parameters(), lr = 0.00001, momentum = 0.9, weight_decay=5e-4)
+    optimizer = torch.optim.SGD(model.parameters(), lr = 0.00002, weight_decay=5e-4)
     criterion = loss_copy_1.YoloLoss()
     args.epoch_num = 300
     test_accuracy = 0
