@@ -19,8 +19,6 @@ def evaluate(model, test_loader, DEVICE):
     Do NOT modify this function.
     """
     model.eval()
-    test_loss = 0
-    correct = 0
 
     pred_boxes, target_boxes = get_bboxes(
         test_loader, model, iou_threshold=0.5, threshold=0.4, device=DEVICE

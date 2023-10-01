@@ -6,8 +6,8 @@ import torch.optim as optim
 import models
 from datasets import data_loader
 
-from util import loss_copy_1
-from util import utils
+from util import loss
+from utils import resume
 from utils import init_for_distributed
 import eval
 import train
@@ -29,15 +29,15 @@ def main_worker(rank, args):
     trainloader, testloader = data_loader.dataloader(args)
 
     # 4. model load
+    model = models.yolo_v1_impl_3.Yolov1(split_size=7, num_boxes=2, num_classes=20).to(device)
 
-    model = models.yolo_v1_copy_3.Yolov1(split_size=7, num_boxes=2, num_classes=20).to(device)
-
-    if args.resume:
-        print('==> Resuming from checkpoint..')
-        assert os.path.isdir('../checkpoint'), 'Error : no checkpoint directory found'
-        path = '../checkpoint/' + os.path.join(args.load_ckp)
-        checkpoint = torch.load(path)
-        model.load_state_dict(checkpoint['model'])
+    resume.load_ckp(model, args)
+    # if args.resume:
+    #     print('==> Resuming from checkpoint..')
+    #     assert os.path.isdir('../checkpoint'), 'Error : no checkpoint directory found'
+    #     path = '../checkpoint/' + os.path.join(args.load_ckp)
+    #     checkpoint = torch.load(path)
+    #     model.load_state_dict(checkpoint['model'])
 
     model_without_ddp = model
     if args.distributed:
@@ -53,14 +53,12 @@ def main_worker(rank, args):
     ]
     
     # 5. optimizer, scheduler, criterion
-    optimizer = torch.optim.SGD(model.parameters(), lr = 0.00001, momentum = 0.9, weight_decay=5e-4)
-    criterion = loss_copy_1.YoloLoss()
+    optimizer = torch.optim.SGD(model.parameters(), lr = 0.00001, weight_decay=5e-4)
+    criterion = loss.YoloLoss()
     args.epoch_num = 300
-    test_accuracy = 0
 
     #6. train and eval
     start_epoch = 0
-    best_acc = 0
 
     for epoch in range(start_epoch+1, start_epoch+args.epoch_num+1):
         
@@ -68,8 +66,7 @@ def main_worker(rank, args):
             trainloader.sampler.set_epoch(epoch)
             
         train.train(model, trainloader, optimizer, criterion, epoch, args, device)
-        #test_loss, test_accuracy = eval.evaluate(model, testloader, criterion, device)
-
+        eval.evaluate(model, testloader, device)
 
 if __name__ == "__main__": 
     import torch.multiprocessing as mp
