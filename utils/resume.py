@@ -7,4 +7,4 @@ def load_ckp(model, args):
             assert os.path.isdir('../checkpoint'), 'Error : no checkpoint directory found'
             path = '../checkpoint/' + os.path.join(args.load_ckp)
             checkpoint = torch.load(path)
-            model.load_state_dict(checkpoint['model'])
+            model.load_state_dict(checkpoint["state_dict"])
