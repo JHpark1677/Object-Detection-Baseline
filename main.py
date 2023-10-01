@@ -7,6 +7,7 @@ import models
 from datasets import data_loader
 
 from util import loss_copy_1
+from util import utils
 from utils import init_for_distributed
 import eval
 import train
@@ -30,6 +31,13 @@ def main_worker(rank, args):
     # 4. model load
 
     model = models.yolo_v1_copy_3.Yolov1(split_size=7, num_boxes=2, num_classes=20).to(device)
+
+    if args.resume:
+        print('==> Resuming from checkpoint..')
+        assert os.path.isdir('../checkpoint'), 'Error : no checkpoint directory found'
+        path = '../checkpoint/' + os.path.join(args.load_ckp)
+        checkpoint = torch.load(path)
+        model.load_state_dict(checkpoint['model'])
 
     model_without_ddp = model
     if args.distributed:
@@ -59,7 +67,7 @@ def main_worker(rank, args):
         if args.distributed:
             trainloader.sampler.set_epoch(epoch)
             
-        train.train(model, trainloader, optimizer, criterion, epoch, device)
+        train.train(model, trainloader, optimizer, criterion, epoch, args, device)
         #test_loss, test_accuracy = eval.evaluate(model, testloader, criterion, device)
 
 
@@ -68,7 +76,7 @@ if __name__ == "__main__":
     from config import get_args_parser
     import configargparse
 
-    parser = configargparse.ArgumentParser('ResNet', parents=[get_args_parser()])
+    parser = configargparse.ArgumentParser('YOLO', parents=[get_args_parser()])
     args = parser.parse_args()
     
     if len(args.gpu_ids) > 1:
