@@ -1,6 +1,7 @@
 import os
 import torch
-import torch.nn as nn
+
+import visdom
 from torchvision import models
 import torch.optim as optim
 import models
@@ -13,7 +14,7 @@ import eval
 import train
 
 def main_worker(rank, args):
-
+    # 1. Init distributed
     if args.distributed:
         init_for_distributed(rank, args)
 
@@ -21,25 +22,28 @@ def main_worker(rank, args):
     device = torch.device('cuda:{}'.format(int(args.gpu_ids[args.rank])))
     print("My Device :", device)
 
-    # 3. data loader
+    # 3. visdom
+    if args.visdom_true:
+        vis = visdom.Visdom()
+    else:
+        vis = None
+    
+    # 4. data loader
     path2data = 'D:\data'
     if not os.path.exists(path2data):
         os.mkdir(path2data)
 
     trainloader, testloader = data_loader.dataloader(args)
 
-    # 4. model load
-    model = models.yolo_v1_impl_3.Yolov1(split_size=7, num_boxes=2, num_classes=20).to(device)
-        
-    resume.load_ckp(model, args)
-    # if args.resume:
-    #     print('==> Resuming from checkpoint..')
-    #     assert os.path.isdir('../checkpoint'), 'Error : no checkpoint directory found'
-    #     path = '../checkpoint/' + os.path.join(args.load_ckp)
-    #     checkpoint = torch.load(path)
-    #     model.load_state_dict(checkpoint['model'])
+    # 5. model load
+    if args.resume :
+        model = models.yolo_v1_impl_3.Yolov1(split_size=7, num_boxes=2, num_classes=20).to(device)
+        model.state_dict(resume.load_ckp(args))
+    else :
+        model = models.yolo_v1_impl_3.Yolov1(split_size=7, num_boxes=2, num_classes=20).to(device)
     
     model_without_ddp = model
+
     if args.distributed:
         model = torch.nn.parallel.DistributedDataParallel(module=model, device_ids=[int(args.gpu_ids[args.rank])], find_unused_parameters=True)
         model_without_ddp = model.module
@@ -65,8 +69,9 @@ def main_worker(rank, args):
         if args.distributed:
             trainloader.sampler.set_epoch(epoch)
             
-        train.train(model, trainloader, optimizer, criterion, epoch, args, device)
-        eval.evaluate(model, testloader, device)
+        train.train(model, trainloader, optimizer, criterion, epoch, args, vis, device)
+        eval.evaluate(model, testloader, epoch, args, vis, device)
+
 
 if __name__ == "__main__": 
     import torch.multiprocessing as mp

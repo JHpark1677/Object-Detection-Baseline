@@ -7,12 +7,11 @@ from util.utils import (
     cellboxes_to_boxes,
     get_bboxes,
     plot_image,
-    save_checkpoint,
-    load_checkpoint
 )
+from utils import vis_report
 
 
-def evaluate(model, test_loader, DEVICE):
+def evaluate(model, test_loader, epoch, args, vis, DEVICE):
     """
     Evaluates the trained model with test data.
 
@@ -28,4 +27,7 @@ def evaluate(model, test_loader, DEVICE):
         pred_boxes, target_boxes, iou_threshold=0.5, box_format="midpoint"
     )
 
-    print(f"Test mAP: {mean_avg_prec}")
+    print(f" Test mAP: {mean_avg_prec}")
+    
+    mean_loss = 0
+    vis_report.vis_map_report(vis, args, epoch, mean_loss, mean_avg_prec, stage="Test")

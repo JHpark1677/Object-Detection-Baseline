@@ -1,5 +1,6 @@
 import os
 
+import torch
 from tqdm.auto import tqdm
 from util.utils import (
     non_max_suppression,
@@ -9,16 +10,15 @@ from util.utils import (
     get_bboxes,
     plot_image,
 )
-
 from utils import resume
+from utils import vis_report
 
-def train(model, train_loader, optimizer, criterion, epoch,args, DEVICE):
+def train(model, train_loader, optimizer, criterion, epoch, args, vis, DEVICE):
     """
     Trains the model with training data.
 
     Do NOT modify this function.
     """
-    batches = len(train_loader)
     model.train()
 
     pred_boxes, target_boxes = get_bboxes(
@@ -29,19 +29,14 @@ def train(model, train_loader, optimizer, criterion, epoch,args, DEVICE):
         pred_boxes, target_boxes, iou_threshold=0.5, box_format="midpoint"
     )
     
-    print(f"Train mAP: {mean_avg_prec}")
+    print(f" Train mAP: {mean_avg_prec}")
 
-    train_fn(train_loader, model, optimizer, criterion, epoch, DEVICE)
+    mean_loss = train_fn(train_loader, model, optimizer, criterion, epoch, args, vis, DEVICE)
+    vis_report.vis_map_report(vis, args, epoch, mean_loss, mean_avg_prec, stage="Train")
+    resume.save_ckp(model, args)
+    
 
-    path = '../checkpoint/' + os.path.join(args.save_ckp)
-    checkpoint = {
-        "state_dict" : model.state_dict(), 
-        "optimizer" : optimizer.state_dict()
-    }
-    resume.save_checkpoint(checkpoint, path)
-
-
-def train_fn(train_loader, model, optimizer, loss_fn, epoch, DEVICE):
+def train_fn(train_loader, model, optimizer, loss_fn, epoch, args, vis, DEVICE):
     loop = tqdm(train_loader, leave=True)
     mean_loss = []
 
@@ -57,5 +52,8 @@ def train_fn(train_loader, model, optimizer, loss_fn, epoch, DEVICE):
         # update progress bar
         loop.set_postfix(loss=loss.item())
         loop.set_description("Epoch {} - train loss: {:.6f}".format(epoch, loss.item()))
-
-    print(f"Mean loss was {sum(mean_loss)/len(mean_loss)}")
+    
+    final_loss = sum(mean_loss) / len(mean_loss)    
+    print(f"Mean loss was {final_loss}")
+    return final_loss
+    
